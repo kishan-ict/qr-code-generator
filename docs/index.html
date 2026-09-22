@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create and download QR codes from text or URLs.">
+  <title>QR Code Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="card" aria-labelledby="page-title">
+      <div class="qr-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="eyebrow">SIMPLE • FAST • FREE</p>
+      <h1 id="page-title">QR Code Generator</h1>
+      <p class="intro">Turn any link, event registration URL, message, or contact detail into a downloadable QR code.</p>
+
+      <form id="qr-form">
+        <label for="text">Text or URL</label>
+        <textarea id="text" rows="5" maxlength="2000" placeholder="https://example.com" required></textarea>
+        <p id="error" class="error" role="alert" hidden></p>
+        <button type="submit">Generate QR Code</button>
+      </form>
+
+      <section id="result" class="result" hidden aria-live="polite">
+        <img id="qr-image" alt="Generated QR code">
+        <a id="download" class="download" download="my-qr-code.png">Download PNG</a>
+      </section>
+
+      <div class="uses">
+        <p>Great for:</p>
+        <ul><li>Sharing links</li><li>Business & marketing</li><li>Event registrations</li></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
