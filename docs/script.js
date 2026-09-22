@@ -29,20 +29,31 @@ form.addEventListener("submit", (event) => {
       text: text,
       width: 512,
       height: 512,
-      colorDark: "#101828",
+      colorDark: "#000000",
       colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.M
+      correctLevel: QRCode.CorrectLevel.H
     });
 
     // qrcode.js completes its canvas/image work asynchronously on Android.
     window.setTimeout(() => {
       try {
-        const canvas = staging.querySelector("canvas");
-        const image = staging.querySelector("img");
-        const dataUrl = canvas ? canvas.toDataURL("image/png") : (image ? image.src : "");
+        const qrCanvas = staging.querySelector("canvas");
+        if (!qrCanvas) throw new Error("QR canvas not ready");
 
-        if (!dataUrl) throw new Error("QR image not ready");
+        // Add a large white quiet zone. This is required for dependable scanning
+        // in Google Lens and most phone-camera QR readers.
+        const border = 80;
+        const finalCanvas = document.createElement("canvas");
+        finalCanvas.width = qrCanvas.width + (border * 2);
+        finalCanvas.height = qrCanvas.height + (border * 2);
 
+        const context = finalCanvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        context.imageSmoothingEnabled = false;
+        context.drawImage(qrCanvas, border, border);
+
+        const dataUrl = finalCanvas.toDataURL("image/png");
         qrImage.src = dataUrl;
         download.href = dataUrl;
         result.hidden = false;
