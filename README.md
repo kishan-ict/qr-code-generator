@@ -14,6 +14,8 @@ A simple web app that turns any text or URL into a downloadable QR-code image.
 - Python + Flask
 - HTML and CSS
 - `qrcode` with Pillow
+- React + Vite for the GitHub Pages interface
+- ThreeUI Halftone Flow shader as a mobile-only background
 
 ## Run locally
 
@@ -56,12 +58,34 @@ A simple web app that turns any text or URL into a downloadable QR-code image.
 
 5. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
+## Build the GitHub Pages site
+
+The static site in `docs/` is built from the React app in `frontend/`. The animated shader is loaded only on mobile-width screens; QR generation runs in the browser.
+
+1. Install Node.js (18 or newer).
+2. Install the front-end dependencies and build the Pages files:
+
+   ```bash
+   npm install
+   npm run build
+   ```
+
+3. Commit the updated `docs/` build output and push it to GitHub. In the repository, open **Settings → Pages** and select the `main` branch and `/docs` folder as the publishing source.
+
+For local front-end development, run `npm run dev` and open the URL printed by Vite. For a production-like local preview, run `npm run build` followed by `npm run preview`.
+
 ## Project structure
 
 ```
 qr-code-generator/
 ├── app.py
 ├── requirements.txt
+├── frontend/
+│   └── src/
+├── src/shaders/                 # Exact registered ThreeUI source snapshot
+├── package.json
+├── vite.config.ts
+├── docs/                        # GitHub Pages build output
 ├── templates/
 │   └── index.html
 └── static/
