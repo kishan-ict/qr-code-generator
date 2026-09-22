@@ -4,10 +4,12 @@ import "@designcodeio/threeui/style.css";
 import "./styles.css";
 
 const PredictiveArcCanvas = lazy(() =>
-  import("@designcodeio/threeui").then(({ PredictiveArcCanvas }) => ({ default: PredictiveArcCanvas })),
+  import("@designcodeio/threeui/components/PredictiveArcCanvas").then(({ PredictiveArcCanvas }) => ({
+    default: PredictiveArcCanvas,
+  })),
 );
 const SylvaLivingWorldScene = lazy(() =>
-  import("@designcodeio/threeui").then(({ SylvaLivingWorldScene }) => ({
+  import("@designcodeio/threeui/components/SylvaLivingWorldScene").then(({ SylvaLivingWorldScene }) => ({
     default: SylvaLivingWorldScene as ComponentType<{ variant: "living-green" }>,
   })),
 );
