@@ -1,6 +1,6 @@
 const form = document.querySelector("#qr-form");
 const textInput = document.querySelector("#text");
-const error = document.querySelector("#error");
+const errorMessage = document.querySelector("#error");
 const result = document.querySelector("#result");
 const qrImage = document.querySelector("#qr-image");
 const download = document.querySelector("#download");
@@ -14,12 +14,12 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = textInput.value.trim();
 
-  error.hidden = true;
+  errorMessage.hidden = true;
   result.hidden = true;
 
   if (!text) {
-    error.textContent = "Please enter text or a URL to create your QR code.";
-    error.hidden = false;
+    errorMessage.textContent = "Please enter text or a URL to create your QR code.";
+    errorMessage.hidden = false;
     return;
   }
 
@@ -47,13 +47,13 @@ form.addEventListener("submit", (event) => {
         download.href = dataUrl;
         result.hidden = false;
         result.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      } catch (error) {
-        error.hidden = false;
-        error.textContent = "Could not prepare the QR image. Please reload the page once and try again.";
+      } catch (renderError) {
+        errorMessage.textContent = "Could not prepare the QR image. Please reload the page once and try again.";
+        errorMessage.hidden = false;
       }
     }, 250);
-  } catch (error) {
-    error.hidden = false;
-    error.textContent = "Could not create the QR code. Please try shorter text.";
+  } catch (generationError) {
+    errorMessage.textContent = "Could not create the QR code. Please try shorter text.";
+    errorMessage.hidden = false;
   }
 });
