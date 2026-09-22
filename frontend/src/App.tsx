@@ -1,10 +1,15 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type ComponentType, type FormEvent } from "react";
 import QRCode from "qrcode";
 import "@designcodeio/threeui/style.css";
 import "./styles.css";
 
 const PredictiveArcCanvas = lazy(() =>
   import("@designcodeio/threeui").then(({ PredictiveArcCanvas }) => ({ default: PredictiveArcCanvas })),
+);
+const SylvaLivingWorldScene = lazy(() =>
+  import("@designcodeio/threeui").then(({ SylvaLivingWorldScene }) => ({
+    default: SylvaLivingWorldScene as ComponentType<{ variant: "living-green" }>,
+  })),
 );
 
 function useMobileViewport() {
@@ -65,13 +70,15 @@ export default function App() {
 
   return (
     <>
-      {isMobile && (
-        <div className="shader-frame" aria-hidden="true">
-          <Suspense fallback={null}>
+      <div className="shader-frame" aria-hidden="true">
+        <Suspense fallback={null}>
+          {isMobile ? (
             <PredictiveArcCanvas variant="halftone-flow" hue={0} saturation={1.0} brightness={1.0} />
-          </Suspense>
-        </div>
-      )}
+          ) : (
+            <SylvaLivingWorldScene variant="living-green" />
+          )}
+        </Suspense>
+      </div>
       <div className="app-shell">
         <header className="topbar">
           <a className="brand" href="#top" aria-label="QR Studio home">
