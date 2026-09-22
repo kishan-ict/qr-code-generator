@@ -5,7 +5,12 @@ const result = document.querySelector("#result");
 const qrImage = document.querySelector("#qr-image");
 const download = document.querySelector("#download");
 
-form.addEventListener("submit", async (event) => {
+const staging = document.createElement("div");
+staging.setAttribute("aria-hidden", "true");
+staging.style.cssText = "position:fixed;left:-10000px;top:0;";
+document.body.appendChild(staging);
+
+form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = textInput.value.trim();
 
@@ -19,12 +24,21 @@ form.addEventListener("submit", async (event) => {
   }
 
   try {
-    const dataUrl = await QRCode.toDataURL(text, {
-      errorCorrectionLevel: "M",
-      margin: 2,
+    staging.innerHTML = "";
+    new QRCode(staging, {
+      text,
       width: 720,
-      color: { dark: "#101828", light: "#ffffff" }
+      height: 720,
+      colorDark: "#101828",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
     });
+
+    const canvas = staging.querySelector("canvas");
+    const image = staging.querySelector("img");
+    const dataUrl = canvas ? canvas.toDataURL("image/png") : image?.src;
+
+    if (!dataUrl) throw new Error("QR image not created");
 
     qrImage.src = dataUrl;
     download.href = dataUrl;
