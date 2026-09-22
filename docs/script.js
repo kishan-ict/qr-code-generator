@@ -26,26 +26,34 @@ form.addEventListener("submit", (event) => {
   try {
     staging.innerHTML = "";
     new QRCode(staging, {
-      text,
-      width: 720,
-      height: 720,
+      text: text,
+      width: 512,
+      height: 512,
       colorDark: "#101828",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M
     });
 
-    const canvas = staging.querySelector("canvas");
-    const image = staging.querySelector("img");
-    const dataUrl = canvas ? canvas.toDataURL("image/png") : image?.src;
+    // qrcode.js completes its canvas/image work asynchronously on Android.
+    window.setTimeout(() => {
+      try {
+        const canvas = staging.querySelector("canvas");
+        const image = staging.querySelector("img");
+        const dataUrl = canvas ? canvas.toDataURL("image/png") : (image ? image.src : "");
 
-    if (!dataUrl) throw new Error("QR image not created");
+        if (!dataUrl) throw new Error("QR image not ready");
 
-    qrImage.src = dataUrl;
-    download.href = dataUrl;
-    result.hidden = false;
-    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  } catch {
-    error.textContent = "We could not create that QR code. Please try shorter text.";
+        qrImage.src = dataUrl;
+        download.href = dataUrl;
+        result.hidden = false;
+        result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } catch (error) {
+        error.hidden = false;
+        error.textContent = "Could not prepare the QR image. Please reload the page once and try again.";
+      }
+    }, 250);
+  } catch (error) {
     error.hidden = false;
+    error.textContent = "Could not create the QR code. Please try shorter text.";
   }
 });
