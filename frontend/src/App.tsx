@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type ComponentType, type FormEvent } from "react";
+import { lazy, Suspense, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
 import "@designcodeio/threeui/style.css";
 import "./styles.css";
@@ -8,24 +8,6 @@ const PredictiveArcCanvas = lazy(() =>
     default: PredictiveArcCanvas,
   })),
 );
-const SylvaLivingWorldScene = lazy(() =>
-  import("@designcodeio/threeui/components/SylvaLivingWorldScene").then(({ SylvaLivingWorldScene }) => ({
-    default: SylvaLivingWorldScene as ComponentType<{ variant: "living-green" }>,
-  })),
-);
-
-function useMobileViewport() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 760px)");
-    const update = () => setIsMobile(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  return isMobile;
-}
-
 type User = { id: string; name: string; gr: string; course: string; phone: string; blocked: boolean };
 type Book = { id: string; title: string; author: string; category: string; shelf: string; issuedTo?: string };
 
@@ -102,7 +84,6 @@ function LibraryManagement() {
 }
 
 export default function App() {
-  const isMobile = useMobileViewport();
   const [value, setValue] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -150,11 +131,7 @@ export default function App() {
     <>
       <div className="shader-frame" aria-hidden="true">
         <Suspense fallback={null}>
-          {isMobile ? (
-            <PredictiveArcCanvas variant="halftone-flow" hue={0} saturation={1.0} brightness={1.0} />
-          ) : (
-            <SylvaLivingWorldScene variant="living-green" />
-          )}
+          <PredictiveArcCanvas variant="halftone-flow" hue={0} saturation={1.0} brightness={1.0} />
         </Suspense>
       </div>
       <div className="app-shell">
