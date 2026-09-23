@@ -90,3 +90,5 @@ body{background:#080100;color:#fff}.shader-frame{background:#000}.shader-frame::
 .mini-form input{border-color:rgba(255,255,255,.3);background:rgba(0,0,0,.22);color:#fff}.mini-form input::placeholder{color:rgba(255,255,255,.62)}
 .library-tabs button{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff}.library-tabs button.active{background:#fff;color:#571405}
 .empty-state{border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.06)}.empty-state p{color:#fff}.empty-state>span{color:rgba(255,255,255,.66)}
+.topbar{position:relative;z-index:20}.main-nav{position:relative;z-index:21;pointer-events:auto}.main-nav button{pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.25)}
+@media(max-width:760px){.main-nav{position:absolute;top:71px;left:21px;right:21px;justify-content:center;z-index:21}}
