@@ -38,6 +38,24 @@ function LibraryManagement() {
   const [message, setMessage] = useState("");
   const [userForm, setUserForm] = useState({ name: "", gr: "", course: "", phone: "" });
   const [bookForm, setBookForm] = useState({ title: "", author: "", category: "", shelf: "" });
+  const [online, setOnline] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("./api/library")
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data: { users: User[]; books: Book[] }) => { setUsers(data.users); setBooks(data.books); setOnline(true); })
+      .catch(() => setOnline(false))
+      .finally(() => setLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (!loaded || !online) return;
+    const timer = window.setTimeout(() => {
+      fetch("./api/library", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ users, books }) }).catch(() => setOnline(false));
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [users, books, loaded, online]);
 
   function notify(text: string) { setMessage(text); window.setTimeout(() => setMessage(""), 2400); }
   function addUser(event: FormEvent) {
@@ -70,8 +88,8 @@ function LibraryManagement() {
   }
 
   return <section className="library-shell glass-card" aria-label="Library management system">
-    <div className="library-header">
-      <div><span className="eyebrow">LIBRARY MANAGEMENT SYSTEM</span><h2>Books and members</h2><p>Scan a book as a reader or manage the library as an administrator.</p></div>
+      <div className="library-header">
+      <div><span className="eyebrow">LIBRARY MANAGEMENT SYSTEM</span><h2>Books and members</h2><p>Scan a book as a reader or manage the library as an administrator.</p><small className={online ? "sync-online" : "sync-local"}>{online ? "● Shared online data" : "● Local preview mode"}</small></div>
       <div className="library-tabs"><button className={mode === "reader" ? "active" : ""} onClick={() => setMode("reader")}>Reader</button><button className={mode === "manager" ? "active" : ""} onClick={() => setMode("manager")}>Manager</button></div>
     </div>
     {message && <p className="library-message" role="status">{message}</p>}
