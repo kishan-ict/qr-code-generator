@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import QRCode from "qrcode";
 import "@designcodeio/threeui/style.css";
 import "./styles.css";
