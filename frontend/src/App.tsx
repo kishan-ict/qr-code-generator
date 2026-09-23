@@ -40,6 +40,7 @@ function LibraryManagement() {
   const [bookForm, setBookForm] = useState({ title: "", author: "", category: "", shelf: "" });
   const [online, setOnline] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [managerUnlocked, setManagerUnlocked] = useState(false);
 
   useEffect(() => {
     fetch("./api/library")
@@ -52,10 +53,17 @@ function LibraryManagement() {
   useEffect(() => {
     if (!loaded || !online) return;
     const timer = window.setTimeout(() => {
-      fetch("./api/library", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ users, books }) }).catch(() => setOnline(false));
+      fetch("./api/library", { method: "PUT", headers: { "Content-Type": "application/json", "X-Manager-Pin": "1to8" }, body: JSON.stringify({ users, books }) }).catch(() => setOnline(false));
     }, 250);
     return () => window.clearTimeout(timer);
   }, [users, books, loaded, online]);
+
+  function openManager() {
+    if (managerUnlocked) return setMode("manager");
+    const pin = window.prompt("Enter manager PIN:");
+    if (pin === "1to8") { setManagerUnlocked(true); setMode("manager"); }
+    else if (pin !== null) notify("Incorrect manager PIN.");
+  }
 
   function notify(text: string) { setMessage(text); window.setTimeout(() => setMessage(""), 2400); }
   function addUser(event: FormEvent) {
@@ -90,7 +98,7 @@ function LibraryManagement() {
   return <section className="library-shell glass-card" aria-label="Library management system">
       <div className="library-header">
       <div><span className="eyebrow">LIBRARY MANAGEMENT SYSTEM</span><h2>Books and members</h2><p>Scan a book as a reader or manage the library as an administrator.</p><small className={online ? "sync-online" : "sync-local"}>{online ? "● Shared online data" : "● Local preview mode"}</small></div>
-      <div className="library-tabs"><button className={mode === "reader" ? "active" : ""} onClick={() => setMode("reader")}>Reader</button><button className={mode === "manager" ? "active" : ""} onClick={() => setMode("manager")}>Manager</button></div>
+      <div className="library-tabs"><button className={mode === "reader" ? "active" : ""} onClick={() => setMode("reader")}>Reader</button><button className={mode === "manager" ? "active" : ""} onClick={openManager}>Manager</button></div>
     </div>
     {message && <p className="library-message" role="status">{message}</p>}
     {mode === "reader" ? <div className="book-grid">{books.map((book) => <button className="book-card" key={book.id} onClick={() => setSelectedBook(book)}><span className="book-qr">▦</span><span><b>{book.title}</b><small>{book.author} · {book.id}</small></span><em className={book.issuedTo ? "issued" : "available"}>{book.issuedTo ? "Issued" : "Available"}</em></button>)}</div> : <div className="manager-grid">
