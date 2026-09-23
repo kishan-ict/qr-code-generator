@@ -92,3 +92,4 @@ body{background:#080100;color:#fff}.shader-frame{background:#000}.shader-frame::
 .empty-state{border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.06)}.empty-state p{color:#fff}.empty-state>span{color:rgba(255,255,255,.66)}
 .topbar{position:relative;z-index:20}.main-nav{position:relative;z-index:21;pointer-events:auto}.main-nav button{pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.25)}
 @media(max-width:760px){.main-nav{position:absolute;top:71px;left:21px;right:21px;justify-content:center;z-index:21}}
+.sync-online,.sync-local{display:block;margin-top:8px;font-size:11px;font-weight:700}.sync-online{color:#8ff0bf}.sync-local{color:#ffd3be}
