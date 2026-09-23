@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS library_state (
+  id INTEGER PRIMARY KEY,
+  users TEXT NOT NULL,
+  books TEXT NOT NULL
+);
