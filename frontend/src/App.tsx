@@ -26,6 +26,81 @@ function useMobileViewport() {
   return isMobile;
 }
 
+type User = { id: string; name: string; gr: string; course: string; phone: string; blocked: boolean };
+type Book = { id: string; title: string; author: string; category: string; shelf: string; issuedTo?: string };
+
+const starterUsers: User[] = [
+  { id: "u1", name: "Demo Student", gr: "GR1001", course: "Computer Engineering", phone: "0000000000", blocked: false },
+];
+const starterBooks: Book[] = [
+  { id: "BOOK001", title: "Python Programming", author: "Mark Lutz", category: "Programming", shelf: "A-01" },
+  { id: "BOOK002", title: "Clean Code", author: "Robert C. Martin", category: "Programming", shelf: "A-02" },
+  { id: "BOOK003", title: "Data Structures", author: "Narasimha Karumanchi", category: "Computer Science", shelf: "B-01" },
+  { id: "BOOK004", title: "Computer Networks", author: "Andrew S. Tanenbaum", category: "Networking", shelf: "B-02" },
+  { id: "BOOK005", title: "Database System Concepts", author: "Abraham Silberschatz", category: "Database", shelf: "C-01" },
+];
+
+function useStored<T>(key: string, fallback: T) {
+  const [value, setValue] = useState<T>(() => {
+    try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback; } catch { return fallback; }
+  });
+  useEffect(() => localStorage.setItem(key, JSON.stringify(value)), [key, value]);
+  return [value, setValue] as const;
+}
+
+function LibraryManagement() {
+  const [users, setUsers] = useStored<User[]>("qr-library-users", starterUsers);
+  const [books, setBooks] = useStored<Book[]>("qr-library-books", starterBooks);
+  const [mode, setMode] = useState<"reader" | "manager">("reader");
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [message, setMessage] = useState("");
+  const [userForm, setUserForm] = useState({ name: "", gr: "", course: "", phone: "" });
+  const [bookForm, setBookForm] = useState({ title: "", author: "", category: "", shelf: "" });
+
+  function notify(text: string) { setMessage(text); window.setTimeout(() => setMessage(""), 2400); }
+  function addUser(event: FormEvent) {
+    event.preventDefault();
+    if (!userForm.name.trim() || !userForm.gr.trim()) return notify("Name and GR number are required.");
+    setUsers([...users, { id: crypto.randomUUID(), ...userForm, blocked: false }]);
+    setUserForm({ name: "", gr: "", course: "", phone: "" }); notify("Student added successfully.");
+  }
+  function addBook(event: FormEvent) {
+    event.preventDefault();
+    if (!bookForm.title.trim() || !bookForm.author.trim()) return notify("Book title and author are required.");
+    const id = `BOOK${String(books.length + 1).padStart(3, "0")}`;
+    setBooks([...books, { id, ...bookForm }]);
+    setBookForm({ title: "", author: "", category: "", shelf: "" }); notify(`Book added with ID ${id}.`);
+  }
+  function issueBook() {
+    const gr = window.prompt("Enter the student's GR number:")?.trim();
+    if (!gr || !selectedBook) return;
+    const user = users.find((item) => item.gr.toLowerCase() === gr.toLowerCase());
+    if (!user) return notify("Student not found.");
+    if (user.blocked) return notify("This student is blocked.");
+    if (selectedBook.issuedTo) return notify("This book is already issued.");
+    setBooks(books.map((book) => book.id === selectedBook.id ? { ...book, issuedTo: user.gr } : book));
+    setSelectedBook({ ...selectedBook, issuedTo: user.gr }); notify("Book issued successfully.");
+  }
+  function returnBook(book: Book) {
+    setBooks(books.map((item) => item.id === book.id ? { ...item, issuedTo: undefined } : item));
+    if (selectedBook?.id === book.id) setSelectedBook({ ...book, issuedTo: undefined });
+    notify("Book returned successfully.");
+  }
+
+  return <section className="library-shell glass-card" aria-label="Library management system">
+    <div className="library-header">
+      <div><span className="eyebrow">LIBRARY MANAGEMENT SYSTEM</span><h2>Books and members</h2><p>Scan a book as a reader or manage the library as an administrator.</p></div>
+      <div className="library-tabs"><button className={mode === "reader" ? "active" : ""} onClick={() => setMode("reader")}>Reader</button><button className={mode === "manager" ? "active" : ""} onClick={() => setMode("manager")}>Manager</button></div>
+    </div>
+    {message && <p className="library-message" role="status">{message}</p>}
+    {mode === "reader" ? <div className="book-grid">{books.map((book) => <button className="book-card" key={book.id} onClick={() => setSelectedBook(book)}><span className="book-qr">▦</span><span><b>{book.title}</b><small>{book.author} · {book.id}</small></span><em className={book.issuedTo ? "issued" : "available"}>{book.issuedTo ? "Issued" : "Available"}</em></button>)}</div> : <div className="manager-grid">
+      <div className="manager-panel"><h3>Add student</h3><form onSubmit={addUser} className="mini-form">{(["name", "gr", "course", "phone"] as const).map((field) => <input key={field} placeholder={field === "gr" ? "GR number" : field[0].toUpperCase() + field.slice(1)} value={userForm[field]} onChange={(event) => setUserForm({ ...userForm, [field]: event.target.value })} />)}<button className="small-button">Add student</button></form><h3>Students ({users.length})</h3>{users.map((user) => <div className="admin-row" key={user.id}><span><b>{user.name}</b><small>{user.gr} · {user.course}</small></span><button onClick={() => setUsers(users.map((item) => item.id === user.id ? { ...item, blocked: !item.blocked } : item))} className={user.blocked ? "unblock" : "block"}>{user.blocked ? "Unblock" : "Block"}</button><button onClick={() => setUsers(users.filter((item) => item.id !== user.id))} className="delete">Delete</button></div>)}</div>
+      <div className="manager-panel"><h3>Add book</h3><form onSubmit={addBook} className="mini-form">{(["title", "author", "category", "shelf"] as const).map((field) => <input key={field} placeholder={field[0].toUpperCase() + field.slice(1)} value={bookForm[field]} onChange={(event) => setBookForm({ ...bookForm, [field]: event.target.value })} />)}<button className="small-button">Add book</button></form><h3>Books ({books.length})</h3>{books.map((book) => <div className="admin-row" key={book.id}><span><b>{book.title}</b><small>{book.id} · {book.issuedTo ? `Issued to ${book.issuedTo}` : "Available"}</small></span><button onClick={() => book.issuedTo ? returnBook(book) : setSelectedBook(book)} className="return">{book.issuedTo ? "Return" : "Issue"}</button><button onClick={() => setBooks(books.filter((item) => item.id !== book.id))} className="delete">Delete</button></div>)}</div>
+    </div>}
+    {selectedBook && <div className="book-detail"><button className="close-detail" onClick={() => setSelectedBook(null)}>×</button><span className="book-qr large">▦</span><span className="eyebrow">{selectedBook.id}</span><h3>{selectedBook.title}</h3><p>{selectedBook.author} · {selectedBook.category || "General"} · Shelf {selectedBook.shelf || "Not assigned"}</p><strong className={selectedBook.issuedTo ? "issued" : "available"}>{selectedBook.issuedTo ? `Issued to ${selectedBook.issuedTo}` : "Available"}</strong>{mode === "manager" && !selectedBook.issuedTo && <button className="small-button" onClick={issueBook}>Issue this book</button>}</div>}
+  </section>;
+}
+
 export default function App() {
   const isMobile = useMobileViewport();
   const [value, setValue] = useState("");
@@ -33,6 +108,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [section, setSection] = useState<"qr" | "library">("qr");
 
   async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -88,17 +164,18 @@ export default function App() {
             <span>qr<span className="brand-accent">studio</span></span>
           </a>
           <span className="top-note"><span className="status-dot" /> Free QR code maker</span>
+          <nav className="main-nav"><button className={section === "qr" ? "active" : ""} onClick={() => setSection("qr")}>QR Generator</button><button className={section === "library" ? "active" : ""} onClick={() => setSection("library")}>Library System</button></nav>
         </header>
 
         <main id="top" className="shell">
-          <section className="intro">
+          {section === "qr" && <section className="intro">
             <span className="eyebrow">MAKE IT SCANNABLE</span>
             <h1>Turn anything into<br /><span>a QR code.</span></h1>
             <p>Create a QR code for a link, event, or message. Download the image and share it anywhere.</p>
             <div className="trust-row"><span>✓ No account needed</span><span>✓ PNG download</span><span>✓ Made for scanning</span></div>
-          </section>
+          </section>}
 
-          <section className="workspace glass-card" aria-label="QR code generator">
+          {section === "qr" && <section className="workspace glass-card" aria-label="QR code generator">
             <div className="form-panel">
               <div className="panel-heading">
                 <span className="step">01</span>
@@ -135,12 +212,14 @@ export default function App() {
                 </div>
               )}
             </div>
-          </section>
+          </section>}
 
-          <section className="use-cases" aria-label="Common uses">
+          {section === "library" && <><section className="library-intro"><span className="eyebrow">COLLABORATED MODULE</span><h1>Library <span>management.</span></h1><p>Every book has a QR identity. Readers can view details, while managers control members, books, and issue records.</p></section><LibraryManagement /></>}
+
+          {section === "qr" && <section className="use-cases" aria-label="Common uses">
             <span className="use-title">MADE FOR EVERYDAY SHARING</span>
             <div className="use-list"><span><b>↗</b> Share links</span><span><b>▦</b> Promote a business</span><span><b>◎</b> Event registrations</span></div>
-          </section>
+          </section>}
         </main>
         <footer><span>QR Studio</span><span>Simple QR codes, ready to share.</span></footer>
       </div>
